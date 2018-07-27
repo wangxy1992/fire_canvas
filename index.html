@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/index.css"/>
+	</head>
+	<body>
+		<div style="width: 1000px;height: 800px;display:flex;justify-content:center;align-items:center">
+			<canvas id="canvas" width="1000" height="800"></canvas>
+		</div>
+		<script src="js/jquery-3.3.1/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			var fireList = [];
+			var boomList = [];
+			var canvas = document.getElementById("canvas");
+			var c = canvas.getContext("2d");
+			setInterval(function(){
+				startFire(c,fireList)
+			},2000)
+			setInterval(function(){
+				startFire(c,fireList)
+			},3000)
+			setInterval(function(){
+				c.clearRect(0,0,1000,800)
+				for (let i = 0;i < fireList.length ; i++){
+					if (fireList[i].speedY > 5){
+						boomFire(c,fireList[i],boomList)
+						fireList.splice(i,1)
+						i -= 1;
+						return
+					}else{
+						upFire(c,fireList[i])
+					}		
+				}
+				for (let i = 0 ; i < boomList.length ; i++){
+//					console.log(boomList[i])
+//					console.log(boomList[0].boomColor)
+					boom(c,boomList[i])
+				}
+			},40)
+			$("#canvas").on("click",function(e){
+				fireList.push({startX : e.pageX , startY : e.pageY,speedX : 0, speedY : 6})
+			})
+			
+			
+			
+			
+//			生成初始例子
+			function startFire(c,fireList){
+//				生成初始数据 
+//				startX初始x坐标
+//				startY初始y坐标
+//				speedX初始x轴速度		
+//              speedY初始y轴速度
+				var startX = Math.random()*20 + 490,
+					startY = 800,
+					speedX = (Math.random() - 0.5)*10,
+					speedY = -(Math.random()*5 + 20),
+					boomColor = "rgba("+ Math.floor(Math.random()*250) + "," +Math.floor(Math.random()*250) + "," + Math.floor(Math.random()*250) + ",1)";
+				fireList.push({startX : startX , startY : startY,speedX : speedX, speedY : speedY ,boomColor : boomColor});
+//				c.clearRect(0,0,1000,800);
+				c.beginPath();
+				c.fillStyle= boomColor;
+				c.fillRect(startX,startY,4,4);
+				c.closePath();
+			}
+			
+//			上升轨迹
+			function upFire(c,fireList){
+				fireList.startX = fireList.startX + fireList.speedX;
+				fireList.startY = fireList.startY + fireList.speedY;
+				fireList.speedY = fireList.speedY + 0.392;
+				c.beginPath();
+				c.fillStyle= fireList.boomColor;
+				c.fillRect(fireList.startX,fireList.startY,4,4);
+				c.closePath();
+			}
+//			爆炸
+			function boomFire(c,fireList,boomList){
+				var list = [];
+//				爆炸初始数据
+//				boomX爆炸初始x坐标
+//				boomY爆炸初始y坐标
+//				boomSpeedX爆炸初始x速度
+//				boomSpeedY爆炸初始y速度
+//				boomNum爆炸个数
+				var boomNum = Math.floor((Math.random() * 20) + 80)
+//				console.log(fireList.startX)
+				for (let i = 0 ; i < boomNum ; i++){
+					var boomX = fireList.startX,
+						boomY = fireList.startY,
+						boomSpeedX = (i - boomNum / 2)/5,
+						boomSpeedY = (Math.random()-0.4) * 20,
+						boomColor = "rgba("+ Math.floor(Math.random()*250) + "," +Math.floor(Math.random()*250) + "," + Math.floor(Math.random()*250) + ",1)";
+					boomList.push({boomX : boomX , boomY : boomY , boomSpeedX : boomSpeedX , boomSpeedY :boomSpeedY , boomColor : boomColor})
+					c.beginPath();
+					c.fillStyle= boomColor;
+					c.fillRect(boomX,boomY,4,4);
+					c.closePath();
+				}
+//				爆炸2秒后删除本次产生的粒子个数。这个时候的粒子肯定透明度小于0了，哈哈
+				setTimeout(function(){
+					boomList.splice(0,boomNum)
+				},2000)
+			}
+//			爆炸轨迹
+			function boom(c,list){
+				list.boomX = list.boomX + list.boomSpeedX;
+				list.boomY = list.boomY + list.boomSpeedY;
+				list.boomSpeedY = list.boomSpeedY + 0.392;
+//				因为用的是rgba的颜色,所以先用"，"分割,取最后一个
+				var a = list.boomColor.split(",")[3];
+//				删除最后一个字符")",取前面的数字
+				a = a.substring(0, a.length - 1);
+//				拼接新的rgba
+				list.boomColor = list.boomColor.split(",")[0] +","+ list.boomColor.split(",")[1] + "," +list.boomColor.split(",")[2] +","+ (Number(a) - 0.05) + ")"
+				c.beginPath();
+				c.fillStyle= list.boomColor;
+//				console.log(list.boomX)
+				c.fillRect(list.boomX,list.boomY,4,4);
+				c.closePath();
+			}
+		</script>
+	</body>
+</html>
